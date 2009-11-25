@@ -1,0 +1,34 @@
+---
+site.title = "Just Another Grackle Blog"
+site.blurb = "Programming open source code in Lua for fun <strike>and profit</strike>!"
+site.author = "John Doe"
+---
+!!!
+%html
+  %head
+    - if page and page.title then
+      %title= string.format("%s - %s", page.title, site.title)
+    - else
+      %title= site.title
+    %link(rel="stylesheet" media="screen" href="/stylesheets/screen.css" type="text/css")
+    %meta(http-equiv="Content-Type" content="text/html; charset=UTF-8")
+    %meta(name="description" content="A sample Grackle blog.")
+
+  %body
+    #wrapper
+      %header
+        %h1= site.title
+        %p= site.blurb
+      %nav
+        %ul
+          %li= link("Home", "/")
+          %li= link("About", "/about.html")
+      #main
+        %article
+          = yield(content)
+        %aside
+          %h3 Recent Posts
+          %h3 Links
+          = partial "sample/partials/links"
+      %footer
+        <a href="http://github.com/norman/grackle">Get Grackle</a>

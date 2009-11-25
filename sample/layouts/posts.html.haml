@@ -1,0 +1,7 @@
+---
+layout = "main"
+---
+.post
+  = yield(content)
+%hr
+%p= string.format("Published on %s", page.published_at)
