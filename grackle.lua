@@ -39,7 +39,6 @@ function generate_site(dir)
     lfs.mkdir_p(util.path(grackle.OUTPUT_DIR, f:get_site_dir()))
     local file = io.open(util.path(grackle.OUTPUT_DIR, f:get_site_path()), "w")
     local output = grackle.render(f)
-    -- print(output)
     file:write(output)
     file:close()
   end

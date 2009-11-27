@@ -13,10 +13,10 @@ function new(args)
 end
 
 function get_file(self)
-	if not self.file then
-		self.file = io.input(self.path):read("*a")
-	end
- return self.file
+  if not self.file then
+    self.file = io.input(self.path):read("*a")
+  end
+  return self.file
 end
 
 function get_file_name(self)
@@ -96,7 +96,7 @@ function get_contents(self)
 end
 
 function get_path(self)
-  return self.path:gsub("^" .. grackle.source_dir .. PATH_SEPARATOR, "")
+  return (self.path:gsub("^" .. grackle.source_dir .. PATH_SEPARATOR, ""))
 end
 
 local function get_renderer_path(dir, format, renderer)
