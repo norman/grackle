@@ -44,12 +44,24 @@ function get_layout_renderer(self)
   end
 end
 
-function get_dir_name(self)
+function get_dir(self)
   return (self.path:gsub(filename_pattern, ""))
+end
+
+function get_dir_name(self)
+  local last
+  for i in self:get_dir():split(PATH_SEPARATOR) do
+    last = i
+  end
+  return last
 end
 
 function is_layout(self)
   return not not (util.ltrimdir(self.path):match("^" .. LAYOUTS_DIR))
+end
+
+function is_main_layout(self)
+  return self.path == util.path(grackle.source_dir, DEFAULT_LAYOUT)
 end
 
 function is_partial(self)
@@ -61,7 +73,7 @@ function is_content(self)
 end
 
 function get_site_dir(self)
-  local dir = util.ltrimdir(get_dir_name(self))
+  local dir = util.ltrimdir(get_dir(self))
   return util.ltrimdir(dir)
 end
 
@@ -78,6 +90,9 @@ function get_headers(self)
 end
 
 function eval_headers(self)
+  -- if self.site_config and self.page_config then
+    -- return self.site_config and self.page_config
+  -- end
   h = get_headers(self)
   self.site_config = {}
   self.page_config = {}

@@ -24,7 +24,7 @@ local function set_up_templates()
     Template.new { path = "t/pages/about.markdown", file = "## About\n" }
 
   templates["Markdown content with sub-layout"] =
-    Template.new { path = "t/pages/posts/first-post.markdown", file = "## First Post!\n" }
+    Template.new { path = "t/pages/posts/first-post.markdown", file = "---\npage.published_at = '2009-01-01'\n---\n## First Post!\n" }
 
   templates["Haml partial"] =
     Template.new { path = "t/partials/links.haml", file = "%a(href='http://example.org') Example" }
@@ -50,6 +50,13 @@ context("The Grackle app", function()
     grackle.OUTPUT_DIR = "/tmp/grackle-test-tmp"
     assert_true(pcall(grackle.generate_site, "sample"))
     os.execute("rm -rf /tmp/grackle-test-tmp")
+  end)
+
+  it("loads data for feeds", function()
+    local t = set_up_templates()["Markdown content with sub-layout"]
+    t:eval_headers()
+    grackle.load_feed_data()
+    assert_equal(1, #grackle.feeds.posts)
   end)
 
 end)
@@ -78,8 +85,12 @@ context("Grackle templates", function()
     assert_equal("haml", t["Haml content"]:get_layout_renderer())
   end)
 
-  they("have a dir name matching its relative location on disk", function()
-    assert_equal("t/pages", t["Haml content"]:get_dir_name())
+  they("have a dir matching its relative location on disk", function()
+    assert_equal("t/pages", t["Haml content"]:get_dir())
+  end)
+
+  they("have a dir matching the name of its parent dir", function()
+    assert_equal("pages", t["Haml content"]:get_dir_name())
   end)
 
   they("have a site_dir matching its relative target location on disk", function()
