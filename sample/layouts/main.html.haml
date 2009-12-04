@@ -1,7 +1,9 @@
 ---
 site.title = "Just Another Grackle Blog"
-site.blurb = "Programming open source code in Lua for fun <strike>and profit</strike>!"
+site.subtitle = "Programming open source code in Lua for fun <strike>and profit</strike>!"
+site.link = "http://example.com"
 site.author = "John Doe"
+site.email = "joe@doe.com"
 ---
 !!!
 %html
@@ -11,6 +13,7 @@ site.author = "John Doe"
     - else
       %title= site.title
     %link(rel="stylesheet" media="screen" href="/stylesheets/screen.css" type="text/css")
+    %link(rel="alternate" href="/posts.atom" type="application/atom+xml")
     %meta(http-equiv="Content-Type" content="text/html; charset=UTF-8")
     %meta(name="description" content="A sample Grackle blog.")
 

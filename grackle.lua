@@ -1,8 +1,14 @@
 module("grackle", package.seeall)
 
 require "lfs"
+require "haml"
+require "markdown"
+require "cosmo"
+
 require "grackle.util"
 require "grackle.helpers"
+require "grackle.atom"
+
 
 HEADER_PATTERN   = "^%-%-%-(.*)%-%-%-%s*"
 LAYOUTS_DIR      = "layouts"
@@ -28,46 +34,37 @@ templates   = nil
 
 function generate_site(dir)
   grackle.init(dir)
-  for f in util.all(grackle.templates, Template.is_content) do
-    lfs.mkdir_p(util.path(grackle.OUTPUT_DIR, f:get_site_dir()))
-    local file = io.open(util.path(grackle.OUTPUT_DIR, f:get_site_path()), "w")
-    local output = grackle.render(f)
+  for t in table.each(grackle.templates, Template.is_content) do
+    lfs.mkdir_p(util.path(grackle.OUTPUT_DIR, t:get_site_dir()))
+    local file = io.open(util.path(grackle.OUTPUT_DIR, t:get_site_path()), "w")
+    local output = grackle.render(t)
     file:write(output)
+    file:close()
+  end
+  local feeds = grackle.atom.get_feeds()
+  for name, feed in pairs(feeds) do
+    local file = io.open(util.path(grackle.OUTPUT_DIR, name .. ".atom"), "w")
+    file:write(feed)
     file:close()
   end
 end
 
-function load_feed_data()
-  for t in util.all(grackle.templates, Template.is_content) do
-    t:eval_headers()
-    if t.page_config.published_at then
-      local name = t:get_dir_name()
-      if not feeds then feeds = {} end
-      if not feeds[name] then feeds[name] = {} end
-      table.insert(feeds[name], t)
-    end
-  end
-  return feeds
-end
-
 function init(source_dir)
   grackle.source_dir = source_dir
-  grackle.templates = grackle.get_templates(source_dir)
-  grackle.main_layout = util.first(templates, Template.is_main_layout)
-  grackle.site_config = grackle.main_layout:eval_headers()
+  templates = get_templates(source_dir)
+  main_layout = table.first(templates, Template.is_main_layout)
+ 	site_config = main_layout:eval_headers()
+	feeds = grackle.atom.load_feed_data()
 end
 
-local function render_template(format, str, locals)
+function render_template(format, str, locals)
   local locals = locals or {}
   if format == "haml" then
-    require "haml"
     setmetatable(locals, {__index = grackle.helpers})
     return haml.render(str, grackle.HAML_OPTIONS, locals)
   elseif format == "markdown" then
-    require "markdown"
     return markdown(str)
   elseif format == "cosmo" then
-    require "cosmo"
     return cosmo.fill(str, locals)
   end
 end

@@ -12,6 +12,29 @@ function lfs.mkdir_p(path)
   end
 end
 
+function string:to_date()
+  local date = {}
+  date.year, date.month, date.day, date.hour, date.min, date.sec =
+    self:match("(%d*)%-(%d*)%-(%d*)%s?(%d*):?(%d*):?(%d*)")
+  if date.hour == "" then date.hour = "00" end
+  if date.min == "" then date.min = "00" end
+  if date.sec == "" then date.sec = "00" end
+  return date
+end
+
+function string:rfc3339()
+  local date = self:to_date()
+  return string.format(
+    "%s-%s-%sT%s:%s:%sZ",
+    date.year,
+    date.month,
+    date.day,
+    date.hour,
+    date.min,
+    date.sec
+  )
+end
+
 function string:split(pat)
   local st, g = 1, self:gmatch("()("..pat..")")
   local function getter(self, segs, seps, sep, cap1, ...)
@@ -60,13 +83,13 @@ function print(...)
   _G["print"](unpack(buf))
 end
 
-function first(t, func)
+function table.first(t, func)
   for _, t in ipairs(t) do
     if func(t) then return t end
   end
 end
 
-function all(t, func)
+function table.each(t, func)
   local func = func or function() return true end
   return coroutine.wrap(function()
     (function()

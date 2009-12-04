@@ -23,8 +23,14 @@ local function set_up_templates()
   templates["Markdown content"] =
     Template.new { path = "t/pages/about.markdown", file = "## About\n" }
 
-  templates["Markdown content with sub-layout"] =
-    Template.new { path = "t/pages/posts/first-post.markdown", file = "---\npage.published_at = '2009-01-01'\n---\n## First Post!\n" }
+  templates["Feed entry 3"] =
+    Template.new { path = "t/pages/posts/feed-entry-3.markdown", file = "---\npage.title = 'Three'\npage.published_at = '2009-12-31'\n---\n## Three\n" }
+
+  templates["Feed entry 2"] =
+    Template.new { path = "t/pages/posts/feed-entry-2.markdown", file = "---\npage.title = 'Two'\npage.published_at = '2009-01-03'\n---\n## Two\n" }
+
+  templates["Feed entry 1"] =
+    Template.new { path = "t/pages/posts/feed-entry-1.markdown", file = "---\npage.title = 'One'\npage.published_at = '2009-01-01'\n---\n## One\n" }
 
   templates["Haml partial"] =
     Template.new { path = "t/partials/links.haml", file = "%a(href='http://example.org') Example" }
@@ -48,15 +54,45 @@ context("The Grackle app", function()
 
   it("generates the site", function()
     grackle.OUTPUT_DIR = "/tmp/grackle-test-tmp"
-    assert_true(pcall(grackle.generate_site, "sample"))
+    grackle.generate_site "sample"
     os.execute("rm -rf /tmp/grackle-test-tmp")
+    assert_true(true)
   end)
 
-  it("loads data for feeds", function()
-    local t = set_up_templates()["Markdown content with sub-layout"]
-    t:eval_headers()
-    grackle.load_feed_data()
-    assert_equal(1, #grackle.feeds.posts)
+  it("loads feed entries", function()
+    set_up_templates()
+    local feeds = grackle.atom.load_feed_data()
+    assert_equal(3, #feeds.posts)
+  end)
+
+
+  it("sorts feed entries by date ascending", function()
+    local t = set_up_templates()
+    local one   = t["Feed entry 1"]
+    local two   = t["Feed entry 2"]
+    local three = t["Feed entry 3"]
+    local feeds = grackle.atom.load_feed_data()
+    assert_equal(one, feeds.posts[1])
+    assert_equal(two, feeds.posts[2])
+    assert_equal(three, feeds.posts[3])
+  end)
+
+end)
+
+context("Grackle utils", function()
+  they("can convert strings to date tables", function()
+    local date = string.to_date("2001-01-02 03:04:05")
+    assert_equal("2001", date.year)
+    assert_equal("01", date.month)
+    assert_equal("02", date.day)
+    assert_equal("03", date.hour)
+    assert_equal("04", date.min)
+    assert_equal("05", date.sec)
+  end)
+
+  they("can convert strings to rfc3339 dates", function()
+    assert_equal("2009-01-01T12:01:02Z", string.rfc3339("2009-01-01 12:01:02"))
+    assert_equal("2009-01-01T00:00:00Z", string.rfc3339("2009-01-01"))
   end)
 
 end)

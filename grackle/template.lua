@@ -129,8 +129,8 @@ function get_layout(self)
   local default_path = get_renderer_path("main", format, renderer)
 	local path = get_renderer_path(site_dir, format, renderer)
   local layout =
-    util.first(grackle.templates, function(t) return t:get_path() == path end)
+    table.first(grackle.templates, function(t) return t:get_path() == path end)
       or
-    util.first(grackle.templates, function(t) return t:get_path() == default_path end)
+    table.first(grackle.templates, function(t) return t:get_path() == default_path end)
   return layout
 end
