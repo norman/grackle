@@ -1,9 +1,14 @@
 ---
 site.title = "Just Another Grackle Blog"
 site.subtitle = "Programming open source code in Lua for fun <strike>and profit</strike>!"
-site.link = "http://example.com"
-site.author = "John Doe"
-site.email = "joe@doe.com"
+site.categories = {"Programming", "Lua", "Stuff"}
+site.uri = "http://example.com/"
+site.rights = "Copyright &copy; 2009, John Doe"
+site.author = {
+  name = "John Doe",
+  email = "joe@doe.com",
+  uri = "http://example.org/john-doe"
+}
 ---
 !!!
 %html
@@ -34,4 +39,4 @@ site.email = "joe@doe.com"
           %h3 Links
           = partial "sample/partials/links"
       %footer
-        <a href="http://github.com/norman/grackle">Get Grackle</a>
+        = link("Get Grackle", "http://github.com/norman/grackle")

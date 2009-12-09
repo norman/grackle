@@ -1,9 +1,10 @@
 #!/usr/bin/env lua
 require "grackle"
 if not arg[1] then
-  error("Usage: grackle <directory name> (--preview)")
+  print "Usage: grackle <directory name> (--preview)"
+  os.exit()
 else
-  grackle.generate_site(arg[1])
+  grackle.generate_site(arg[1]:gsub("/$", ""))
 end
 
 if arg[2] == "--preview" then

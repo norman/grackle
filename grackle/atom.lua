@@ -1,77 +1,68 @@
 module("grackle.atom", package.seeall)
 
-template = [=[
-- lang = site.lang or "en"
+TEMPLATE = [=[
 !!! xml utf-8
-%feed(xml:lang=lang xmlns="http://www.w3.org/2005/Atom")
-  %id= site.link
-  %link(href=feed.link type="application/atom+xml" rel="self")
-  %link(href=site.link type="text/html" rel="alternate")
-  %title
-    &= site.title
-  %updated= feed.updated
+%feed(xml:lang=feed.lang xmlns="http://www.w3.org/2005/Atom")
+  %id= feed.id
+  - if feed.generator then
+    %generator(format="html")
+      &= feed.generator
+  %link(href=feed.uri type="application/atom+xml" rel="self")
+  %link(href=feed.alternate_uri type="text/html" rel="alternate")
+  %title(type="html")
+    &= feed.title
   %subtitle(type="html")
-    &= site.subtitle
-  %author
-    %name= site.author
-    %email= site.email
-  - for _, e in ipairs(feed.entries) do
+    &= feed.subtitle
+  %updated= rfc3339(feed.updated)
+  - if feed.rights then
+    %rights(type="html")
+      &= feed.rights
+  - if feed.author then
+    %author
+      %name= feed.author.name
+      - if feed.author.email then
+        %email= feed.author.email
+      - if feed.author.uri then
+        %uri=feed.author.uri
+  - for c in ipairs(feed.contributors or {}) do
+    %contributor
+      %name= c.name
+      - if c.email then
+        %email= c.email
+      - if c.uri then
+        %uri= c.uri
+  - for _, entry in ipairs(feed.entries) do
     %entry
       %title(type="html")
-        &= e.title
-      %id= e.link
-      %link(href=e.link)
-      %published= e.published_at
-      %updated= e.published_at
-      - if e.summary then
+        &= entry.title
+      %id= entry.id
+      %link(href=entry.uri)
+      %published= rfc3339(entry.published)
+      - if entry.updated then
+        %updated= rfc3339(entry.updated)
+      %author
+        %name= entry.author.name
+        - if entry.author.email then
+          %email= entry.author.email
+        - if entry.author.uri then
+          %uri= entry.author.uri
+      - for c in ipairs(entry.contributors or {}) do
+        %contributor
+          %name= c.name
+          - if c.email then
+            %email= c.email
+          - if c.uri then
+            %uri= c.uri
+      - if entry.summary then
         %summary(type="html")=
-        &= yield(e.summary)
+        &= yield(entry.summary)
       %content(type="html")
-        &= yield(e.content)
+        &= yield(entry.content)
 ]=]
 
-function load_feed_data()
-	local feeds = {}
-  for t in table.each(grackle.templates, Template.is_content) do
-    t:eval_headers()
-    if t.page_config.title and t.page_config.published_at then
-      local name = t:get_dir_name()
-      if not feeds[name] then feeds[name] = {} end
-      table.insert(feeds[name], t)
-    end
-  end
-  for _, f in ipairs(feeds) do
-    table.sort(f, function(a, b)
-      return os.time(a.published_at:to_date()) < os.time(b.published_at:to_date())
-    end)
-  end
-  return feeds
+function taguri(uri, date)
+  local tagdate = date and string.format("%s-%s-%s", date.year, date.month, date.day) or "2009"
+  local s = uri:gsub("^.*://", "tag:"):gsub("#", "/")
+  return (s:gsub("(.-)/(.*)", "%1," .. tagdate .. ":/%2"))
 end
 
-function get_feeds()
-	local rendered_feeds = {}
-	for name, feed in pairs(grackle.feeds) do
-		local entries = {}
-		for i, t in ipairs(feed) do
-			t:eval_headers()
-			local content = grackle.render_template(t:get_renderer(), t:get_contents(), {site = grackle.site_config, page = t.page_config})
-			table.insert(entries, {
-				title = t.page_config.title,
-				link = grackle.site_config.link .. '/' .. t:get_site_path(),
-				published_at = t.page_config.published_at:rfc3339(),
-				content = content
-			})
-		end
-		local haml_config = {format = "xhtml"}
-		local locals = {
-			site = grackle.site_config,
-			feed = {
-        updated = entries[1].published_at,
-				link = grackle.site_config.link .. '/' .. name .. ".atom",
-				entries = entries
-			}
-		}
-		rendered_feeds[name] = haml.render(grackle.atom.template, haml_config, locals)
-	end
-	return rendered_feeds
-end

@@ -12,6 +12,10 @@ function lfs.mkdir_p(path)
   end
 end
 
+function string:title_case()
+  return (self:gsub("^%a", string.upper):gsub("%s+%a", string.upper))
+end
+
 function string:to_date()
   local date = {}
   date.year, date.month, date.day, date.hour, date.min, date.sec =
@@ -20,19 +24,6 @@ function string:to_date()
   if date.min == "" then date.min = "00" end
   if date.sec == "" then date.sec = "00" end
   return date
-end
-
-function string:rfc3339()
-  local date = self:to_date()
-  return string.format(
-    "%s-%s-%sT%s:%s:%sZ",
-    date.year,
-    date.month,
-    date.day,
-    date.hour,
-    date.min,
-    date.sec
-  )
 end
 
 function string:split(pat)

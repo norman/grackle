@@ -3,7 +3,7 @@ require "grackle"
 local function set_up_templates()
   local templates = {}
   templates["Main HTML layout"] =
-    Template.new { path = "t/layouts/main.html.haml", file = "%body= content\n" }
+    Template.new { path = "t/layouts/main.html.haml", file = "---\nsite.uri = 'http://example.com/'---\n%body= content\n" }
 
   templates["Main non-HTML layout"] =
     Template.new { path = "t/layouts/main.css.cosmo", file = "/* CSS */\n$content" }
@@ -24,13 +24,13 @@ local function set_up_templates()
     Template.new { path = "t/pages/about.markdown", file = "## About\n" }
 
   templates["Feed entry 3"] =
-    Template.new { path = "t/pages/posts/feed-entry-3.markdown", file = "---\npage.title = 'Three'\npage.published_at = '2009-12-31'\n---\n## Three\n" }
+    Template.new { path = "t/pages/posts/feed-entry-3.markdown", file = "---\npage.title = 'Three'\npage.published = '2009-12-31'\n---\n## Three\n" }
 
   templates["Feed entry 2"] =
-    Template.new { path = "t/pages/posts/feed-entry-2.markdown", file = "---\npage.title = 'Two'\npage.published_at = '2009-01-03'\n---\n## Two\n" }
+    Template.new { path = "t/pages/posts/feed-entry-2.markdown", file = "---\npage.title = 'Two'\npage.published = '2009-01-03'\n---\n## Two\n" }
 
   templates["Feed entry 1"] =
-    Template.new { path = "t/pages/posts/feed-entry-1.markdown", file = "---\npage.title = 'One'\npage.published_at = '2009-01-01'\n---\n## One\n" }
+    Template.new { path = "t/pages/posts/feed-entry-1.markdown", file = "---\npage.title = 'One'\npage.published = '2009-01-01'\n---\n## One\n" }
 
   templates["Haml partial"] =
     Template.new { path = "t/partials/links.haml", file = "%a(href='http://example.org') Example" }
@@ -58,23 +58,25 @@ context("The Grackle app", function()
     os.execute("rm -rf /tmp/grackle-test-tmp")
     assert_true(true)
   end)
+end)
 
-  it("loads feed entries", function()
-    set_up_templates()
-    local feeds = grackle.atom.load_feed_data()
-    assert_equal(3, #feeds.posts)
+context("Grackle feeds", function()
+
+  local feeds
+
+  before(function()
+    local templates = set_up_templates()
+    local pages = {}
+    for t in table.each(grackle.templates, Template.is_content) do
+      table.insert(pages, t:to_page())
+    end
+    feeds = grackle.get_feeds(pages)
   end)
 
-
-  it("sorts feed entries by date ascending", function()
-    local t = set_up_templates()
-    local one   = t["Feed entry 1"]
-    local two   = t["Feed entry 2"]
-    local three = t["Feed entry 3"]
-    local feeds = grackle.atom.load_feed_data()
-    assert_equal(one, feeds.posts[1])
-    assert_equal(two, feeds.posts[2])
-    assert_equal(three, feeds.posts[3])
+  they("are sorted by date descending", function()
+    assert_equal("Three", feeds.posts.entries[1].title)
+    assert_equal("Two", feeds.posts.entries[2].title)
+    assert_equal("One", feeds.posts.entries[3].title)
   end)
 
 end)
@@ -89,12 +91,13 @@ context("Grackle utils", function()
     assert_equal("04", date.min)
     assert_equal("05", date.sec)
   end)
+end)
 
+context("Grackle utils", function()
   they("can convert strings to rfc3339 dates", function()
-    assert_equal("2009-01-01T12:01:02Z", string.rfc3339("2009-01-01 12:01:02"))
-    assert_equal("2009-01-01T00:00:00Z", string.rfc3339("2009-01-01"))
+    assert_equal("2009-01-01T12:01:02Z", grackle.helpers.rfc3339("2009-01-01 12:01:02"))
+    assert_equal("2009-01-01T00:00:00Z", grackle.helpers.rfc3339("2009-01-01"))
   end)
-
 end)
 
 context("Grackle templates", function()
@@ -178,17 +181,17 @@ context("Grackle templates", function()
     context("for rendering", function()
 
       it("can be Cosmo", function()
-        local rendered = grackle.render(t["Cosmo content"]):gsub("\n", "")
+        local rendered = grackle.render_with_layout(t["Cosmo content"]):gsub("\n", "")
         assert_equal("/* CSS */body { color: #000; }", rendered)
       end)
 
       it("can be Haml", function()
-        local rendered = grackle.render(t["Haml content"]):gsub("\n", "")
+        local rendered = grackle.render_with_layout(t["Haml content"]):gsub("\n", "")
         assert_equal("<body><h1>Welcome</h1></body>", rendered)
       end)
 
       it("can be Markdown", function()
-        local rendered = grackle.render(t["Markdown content"]):gsub("\n", "")
+        local rendered = grackle.render_with_layout(t["Markdown content"]):gsub("\n", "")
         assert_equal("<body><h2>About</h2></body>", rendered)
       end)
 
@@ -216,12 +219,12 @@ context("Grackle templates", function()
     context("for rendering", function()
 
       it("can be Cosmo", function()
-        local rendered = grackle.render(t["Main non-HTML layout"]):gsub("\n", "")
+        local rendered = grackle.render_with_layout(t["Main non-HTML layout"]):gsub("\n", "")
         assert_equal("/* CSS */$content", rendered)
       end)
 
       it("can be Haml", function()
-        local rendered = grackle.render(t["Main HTML layout"]):gsub("\n", "")
+        local rendered = grackle.render_with_layout(t["Main HTML layout"]):gsub("\n", "")
         assert_equal("<body></body>", rendered)
       end)
 
