@@ -147,10 +147,14 @@ function get_feeds(pages)
     feed.alternate_uri = site_config.uri
     feed.id = grackle.atom.taguri(feed.uri)
     feed.title = site_config.title
-    feed.subtitle = site_config.title
+    feed.subtitle = site_config.subtitle
     feed.updated = feed.entries[1].updated or feed.entries[1].published
     feed.author = site_config.author
     feed.rights = site_config.rights
   end
   return feeds
+end
+
+function get_feed_categories(feed)
+  local categories = {}
 end
