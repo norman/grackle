@@ -17,14 +17,10 @@ function taguri(uri, date)
 end
 
 function rfc3339(str)
-  local date = str:to_date()
-  return string.format(
-    "%s-%s-%sT%s:%s:%sZ",
-    date.year,
-    date.month,
-    date.day,
-    date.hour,
-    date.min,
-    date.sec
-  )
+  assert(type(str) == "string", "date is " .. type(str) .. ", expecting string")
+  return os.date("%Y-%m-%dT%H:%M:%SZ", os.time(str:to_date()))
+end
+
+function first_paragraph(content)
+  return (content:match("<p>(.-)</p>"))
 end

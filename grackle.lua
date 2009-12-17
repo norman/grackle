@@ -5,8 +5,8 @@ require "haml"
 require "markdown"
 require "cosmo"
 
-require "grackle.util"
 require "grackle.helpers"
+require "grackle.util"
 require "grackle.atom"
 
 VERSION          = {0, 1, 0}
@@ -102,8 +102,7 @@ function render_with_layout(template, locals)
   local layout = t:get_layout()
   locals.site = grackle.site_config
   locals.page = util.merge_tables(locals.page, t.page_config)
-  setmetatable(locals, {__index = grackle.helpers})
-  local rendered = render(t:get_renderer(), t:get_contents(), locals)
+  local rendered = render(t:get_renderer(), t:get_contents(), locals, {file = template.path})
   if not layout then
     return rendered
   else

@@ -57,7 +57,7 @@ TEMPLATE = [=[
         %summary(type="html")=
         &= yield(entry.summary)
       %content(type="html")
-        &= yield(entry.content)
+        &= yield(entry:get_content())
 ]=]
 
 function taguri(uri, date)

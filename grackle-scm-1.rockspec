@@ -27,7 +27,8 @@ build = {
       ["grackle.util"] = "grackle/util.lua",
       ["grackle.atom"] = "grackle/atom.lua",
       ["grackle.helpers"] = "grackle/helpers.lua",
-      ["grackle.template"] = "grackle/template.lua"
+      ["grackle.template"] = "grackle/template.lua",
+      ["grackle.page"] = "grackle/page.lua"
     },
     bin = {
       ["grackle"] = "bin/grackle"
