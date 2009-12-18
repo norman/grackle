@@ -11,8 +11,7 @@ require "grackle.atom"
 
 VERSION          = {0, 1, 0}
 VERSION_STRING   = table.concat(VERSION, ".")
-URL              = "http://github.com/norman/grackle"
-GENERATOR_STRING = string.format('<a href="%s">Grackle</a> %s', URL, VERSION_STRING)
+GENERATOR_STRING = 'Grackle %s' .. VERSION_STRING
 HEADER_PATTERN   = "^%-%-%-(.*)%-%-%-%s*"
 LAYOUTS_DIR      = "layouts"
 OUTPUT_DIR       = "site"
@@ -102,7 +101,12 @@ function render_with_layout(template, locals)
   local layout = t:get_layout()
   locals.site = grackle.site_config
   locals.page = util.merge_tables(locals.page, t.page_config)
-  local rendered = render(t:get_renderer(), t:get_contents(), locals, {file = template.path})
+  if not locals.my then locals.my = t:to_page() end
+  local options = {file = template.path}
+  if t:get_renderer() == "haml" and t:get_format() == "xml" then
+    options.format = "xhtml"
+  end
+  local rendered = render(t:get_renderer(), t:get_contents(), locals, options)
   if not layout then
     return rendered
   else
@@ -151,10 +155,36 @@ function get_feeds(pages)
     feed.updated = feed.entries[1].updated or feed.entries[1].published
     feed.author = site_config.author
     feed.rights = site_config.rights
+    feed.categories = get_feed_categories(feed)
   end
   return feeds
 end
 
-function get_feed_categories(feed)
+function get_feed_categories(...)
   local categories = {}
+  local buffer = {}
+  for _, feed in ipairs({...}) do
+    for _, entry in ipairs(feed.entries) do
+      if entry.categories then
+        for _, category in ipairs(entry.categories) do
+          if not buffer[category] then
+            buffer[category] = {name = category, pages = {entry}}
+          else
+            table.insert(buffer[category].pages, entry)
+          end
+        end
+      end
+    end
+  end
+  for _, category in pairs(buffer) do
+    table.insert(categories, category)
+  end
+  table.sort(categories, function(a, b)
+    if #a.pages == #b.pages then
+      return a.name < b.name
+    else
+      return #a.pages > #b.pages
+    end
+  end)
+  return categories
 end

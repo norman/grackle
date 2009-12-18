@@ -5,8 +5,7 @@ TEMPLATE = [=[
 %feed(xml:lang=feed.lang xmlns="http://www.w3.org/2005/Atom")
   %id= feed.id
   - if feed.generator then
-    %generator(format="html")
-      &= feed.generator
+    %generator= feed.generator
   %link(href=feed.uri type="application/atom+xml" rel="self")
   %link(href=feed.alternate_uri type="text/html" rel="alternate")
   %title(type="html")
@@ -14,12 +13,16 @@ TEMPLATE = [=[
   %subtitle(type="html")
     &= feed.subtitle
   %updated= rfc3339(feed.updated)
+  - if feed.categories then
+    - for _, category in ipairs(feed.categories) do
+      %category(term=category.name)
   - if feed.rights then
     %rights(type="html")
       &= feed.rights
   - if feed.author then
     %author
-      %name= feed.author.name
+      - if feed.author.name then
+        %name= feed.author.name
       - if feed.author.email then
         %email= feed.author.email
       - if feed.author.uri then
@@ -37,11 +40,15 @@ TEMPLATE = [=[
         &= entry.title
       %id= entry.id
       %link(href=entry.uri)
+      - if entry.categories then
+        - for _, category in ipairs(entry.categories) do
+          %category(term=category)
       %published= rfc3339(entry.published)
       - if entry.updated then
         %updated= rfc3339(entry.updated)
       %author
-        %name= entry.author.name
+        - if entry.author.name then
+          %name= entry.author.name
         - if entry.author.email then
           %email= entry.author.email
         - if entry.author.uri then
@@ -54,8 +61,8 @@ TEMPLATE = [=[
           - if c.uri then
             %uri= c.uri
       - if entry.summary then
-        %summary(type="html")=
-        &= yield(entry.summary)
+        %summary(type="html")
+          &= yield(entry.summary)
       %content(type="html")
         &= yield(entry:get_content())
 ]=]
