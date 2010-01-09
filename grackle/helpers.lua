@@ -33,6 +33,14 @@ function rfc3339(str)
   return os.date("%Y-%m-%dT%H:%M:%SZ", os.time(str:to_date()))
 end
 
+--- An REF3339-formatted date.
+-- This is the date formated used by Atom feeds.
+-- @param str The data to format.
+function w3cdate(str)
+  assert(type(str) == "string", "date is " .. type(str) .. ", expecting string")
+  return os.date("%Y-%m-%dT%H:%M:%S", os.time(str:to_date()))
+end
+
 --- Extracts the first paragraph from an HTML string.
 -- @param content HTML-formatted text
 function first_paragraph(content)
