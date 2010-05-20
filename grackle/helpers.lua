@@ -7,7 +7,7 @@ module("grackle.helpers", package.seeall)
 -- @usage link("Home", "/index.html", {id = "home" class = "nav"})
 function link(content, href, attributes)
   local buf = {}
-  for k, v in pairs(options or {}) do
+  for k, v in pairs(attributes or {}) do
     table.insert(buf, string.format('%s="%s"', tostring(k), tostring(v)))
   end
   table.insert(buf, string.format('href="%s"', href))

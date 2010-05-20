@@ -100,6 +100,12 @@ context("Grackle utils", function()
   end)
 end)
 
+context("Grackle helpers", function()
+  they("add links with attributes", function()
+    assert_equal('<a href="a" id="b">c</a>', grackle.helpers.link("c", "a", {id = "b"}))
+  end)
+end)
+
 context("Grackle templates", function()
 
   local t
