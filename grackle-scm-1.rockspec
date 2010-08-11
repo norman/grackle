@@ -14,6 +14,7 @@ description = {
 }
 dependencies = {
    "lua >= 5.1",
+   "luafilesystem",
    "cosmo",
    "luahaml",
    "markdown"
