@@ -210,6 +210,7 @@ context("Grackle templates", function()
     it("specifes that it is a layout", function()
       assert_false(t["Haml content"]:is_layout())
       assert_true(t["Main HTML layout"]:is_layout())
+      assert_true(t["Main non-HTML layout"]:is_layout())
       assert_false(t["Haml partial"]:is_layout())
     end)
 
@@ -226,7 +227,7 @@ context("Grackle templates", function()
 
       it("can be Cosmo", function()
         local rendered = grackle.render_with_layout(t["Main non-HTML layout"]):gsub("\n", "")
-        assert_equal("/* CSS */$content", rendered)
+        assert_equal("/* CSS */", rendered)
       end)
 
       it("can be Haml", function()
