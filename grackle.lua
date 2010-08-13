@@ -17,6 +17,7 @@ LAYOUTS_DIR      = "layouts"
 OUTPUT_DIR       = "site"
 PAGES_DIR        = "pages"
 PARTIALS_DIR     = "partials"
+STATIC_DIR       = "static"
 PATH_SEPARATOR   = "/"
 DEFAULT_RENDERER = "haml"
 DEFAULT_LAYOUT   = util.path(LAYOUTS_DIR, "main.html." .. DEFAULT_RENDERER)
@@ -35,6 +36,7 @@ pages       = {}
 site_config = nil
 source_dir  = nil
 templates   = {}
+statics = {}
 
 function generate_site(dir)
   grackle.init(dir)
@@ -51,6 +53,18 @@ function generate_site(dir)
     file:write(output)
     file:close()
   end
+  for src, dest in pairs(statics) do
+    local dir, file = dest:match("^(.+)/([^/]+)$")
+    if dir then
+      lfs.mkdir_p(util.path(grackle.OUTPUT_DIR, dir))
+    end
+    dest = util.path(grackle.OUTPUT_DIR, dest)
+    local srcfile = io.open(src, "r")
+    local destfile = io.open(dest, "w")
+    destfile:write(srcfile:read("*all"))
+    srcfile:close()
+    destfile:close()
+  end
 end
 
 --- Parse all the files and load the data into Grackle in preparation for
@@ -58,6 +72,7 @@ end
 function init(source_dir)
   grackle.source_dir = source_dir
   templates = get_templates(source_dir)
+  statics = get_statics(util.path(source_dir, STATIC_DIR))
   main_layout = table.first(templates, Template.is_main_layout)
  	site_config = main_layout.site_config
   -- some people will find "uri" confusing, so support some aliases
@@ -80,6 +95,7 @@ end
 -- supports them).
 function render(renderer, str, locals, options)
   local locals = locals or {}
+
   local options = options or {}
   if renderer == "haml" then
     setmetatable(locals, {__index = grackle.helpers})
@@ -133,6 +149,35 @@ function get_templates(dir)
     end
   end
   return templates
+end
+
+--- Gets a list of static files to include in the site
+function get_statics(dir)
+  local statics = {}
+  local stack = {}
+  table.insert(stack, dir)
+  while #stack > 0 do
+    local cwd = table.remove(stack)
+    for file in lfs.dir(cwd) do
+      local path = util.path(cwd, file)
+      local attr = lfs.attributes(path)
+      if attr.mode == "directory" and file ~= "." and file ~= ".." then
+        table.insert(stack, path)
+      elseif not file:match("^%.") then -- skip hidden files on Unix
+        if cwd == dir then
+          statics[path] = file
+        else
+          -- Remove 'dir' from the path
+          local destpath = path:sub(#dir + 1, -1)
+          if destpath:sub(1 , 1) == grackle.PATH_SEPARATOR then
+            destpath = destpath:sub(2, -1)
+            statics[path] = destpath
+          end
+        end
+      end
+    end
+  end
+  return statics
 end
 
 function get_feeds(pages)
