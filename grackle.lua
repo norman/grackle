@@ -41,8 +41,9 @@ statics = {}
 function generate_site(dir)
   grackle.init(dir)
   for t in table.each(grackle.templates, Template.is_content) do
-    lfs.mkdir_p(util.path(grackle.OUTPUT_DIR, t:get_site_dir()))
-    local file, err = io.open(util.path(grackle.OUTPUT_DIR, t:get_site_path()), "w")
+    local filename = t:get_site_path()
+    lfs.mkdir_p(util.path(grackle.OUTPUT_DIR, util.dirname(filename)))
+    local file, err = io.open(util.path(grackle.OUTPUT_DIR, filename), "w")
     if not file then error(err) end
     assert(file:write(render_with_layout(t)))
     file:close()

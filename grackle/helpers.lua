@@ -1,5 +1,6 @@
 module("grackle.helpers", package.seeall)
 
+
 --- Create an HTML <a> tag.
 -- @param name The tag content
 -- @param href The path or uri to link to
@@ -45,4 +46,10 @@ end
 -- @param content HTML-formatted text
 function first_paragraph(content)
   return (content:match("<p>(.-)</p>"))
+end
+
+-- Returns a path_prefix based on a given date string
+function date_prefix(date)
+  date = date:to_date()
+  return util.path(string.format("%04d", date.year), string.format("%02d", date.month))
 end

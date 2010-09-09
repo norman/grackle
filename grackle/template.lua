@@ -89,10 +89,35 @@ function Template:get_site_dir()
   return util.ltrimdir(dir)
 end
 
+function Template:get_path_prefix()
+  local prefix = self.page_config.path_prefix
+  -- Ensure the path prefix begins and ends with PATH_SEPARATOR
+  -- without duplicates. If the prefix isn't set, simply return
+  -- PATH_SEPARATOR
+
+  if not prefix then
+    return PATH_SEPARATOR
+  end
+
+  if prefix:sub(1,1) ~= PATH_SEPARATOR then
+    prefix = PATH_SEPARATOR .. prefix
+  end
+
+  if prefix:sub(-1,-1) ~= PATH_SEPARATOR then
+    prefix = prefix .. PATH_SEPARATOR
+  end
+
+  if #prefix > 2 then
+    return prefix
+  else
+    return PATH_SEPARATOR
+  end
+end
+
 function Template:get_site_path()
   if not get_site_dir(self) then return end
   local dir = (get_site_dir(self):gsub("^" .. PAGES_DIR, OUTPUT_DIR)) ..
-		PATH_SEPARATOR .. get_base_name(self) .. '.' .. tostring(get_format(self))
+        get_path_prefix(self) .. get_base_name(self) .. '.' .. tostring(get_format(self))
   return (dir:gsub("^" .. PATH_SEPARATOR, ''))
 end
 

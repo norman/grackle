@@ -115,3 +115,8 @@ function ltrimdir(path)
   return (path:gsub("^[^/]*/?", ""))
 end
 
+-- Return the directory portion of a path, i.e.
+-- dirname("monkey/foo/bar/baz.html") == "monkey/foo/bar")
+function dirname(path)
+  return path:match("^(.-)/[^/]+$")
+end
